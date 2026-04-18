@@ -1,7 +1,7 @@
 package org.example
 
 sealed class Expr {
-    data class NumberLiteral(val value: Int) : Expr()
+    data class NumberLiteral(val value: Number) : Expr()
     data class BoolLiteral(val value: Boolean) : Expr()
     data class Variable(val value: String) : Expr()
     data class BinaryOp(val left: Expr, val op: TokenType, val right: Expr) : Expr()

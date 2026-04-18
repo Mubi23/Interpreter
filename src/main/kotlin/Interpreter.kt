@@ -25,20 +25,19 @@ class Interpreter(private val globalScope: Scope = Scope(), private val function
             is Expr.Variable -> return scope.get(expr.value)
             is Expr.BinaryOp -> return evaluateBinary(expr, scope)
             is Expr.Call -> return evaluateCall(expr, scope)
-            else -> throw Exception("Unknown expression")
         }
     }
 
     private fun evaluateCall(expr: Expr.Call, scope: Scope): Any {
         val function = functions[expr.name]
-            ?: throw RuntimeException("Undefined function '${expr.name}'")
+            ?: throw Exception("Undefined function '${expr.name}'")
         val callScope = globalScope.newChild()
         for ((param, arg) in function.params.zip(expr.arguments)) {
             callScope.define(param, evaluate(arg, scope))
         }
         try {
             for (statement in function.body) execute(statement, callScope)
-            throw RuntimeException("Function '${expr.name}' has no return statement")
+            throw Exception("Function '${expr.name}' has no return statement")
         } catch (r: ReturnException) {
             return r.value
         }
@@ -48,16 +47,16 @@ class Interpreter(private val globalScope: Scope = Scope(), private val function
         val left = evaluate(expr.left, scope)
         val right = evaluate(expr.right, scope)
         when (expr.op) {
-            TokenType.PLUS -> return (left as Int) + (right as Int)
-            TokenType.MINUS -> return (left as Int) - (right as Int)
-            TokenType.STAR  -> return (left as Int) * (right as Int)
-            TokenType.SLASH -> return (left as Int) / (right as Int)
+            TokenType.PLUS -> return add(left as Number, right as Number)
+            TokenType.MINUS -> return substract(left as Number, right as Number)
+            TokenType.STAR  -> return multiply(left as Number, right as Number)
+            TokenType.SLASH -> return divide(left as Number, right as Number)
             TokenType.EQ_EQ -> return left == right
             TokenType.NE_EQ -> return left != right
-            TokenType.LT    -> return (left as Int) < (right as Int)
-            TokenType.GT    -> return (left as Int) > (right as Int)
-            TokenType.LT_EQ -> return (left as Int) <= (right as Int)
-            TokenType.GT_EQ -> return (left as Int) >= (right as Int)
+            TokenType.LT    -> return lt(left as Number, right as Number)
+            TokenType.GT    -> return gt(left as Number, right as Number)
+            TokenType.LT_EQ -> return lteq(left as Number, right as Number)
+            TokenType.GT_EQ -> return gteq(left as Number, right as Number)
             else  -> throw RuntimeException("Unknown operator ${expr.op}")
         }
     }
@@ -98,6 +97,40 @@ class Interpreter(private val globalScope: Scope = Scope(), private val function
             execute(otherStatement, scope)
         }
     }
+    //Todo Allow String operations
+    private fun add(l: Number, r:Number): Number {
+        return if (l is Double || r is Double) l.toDouble() + r.toDouble() else l.toInt() + r.toInt()
+    }
+
+    private fun substract(l: Number, r:Number): Number {
+        return if (l is Double || r is Double) l.toDouble() - r.toDouble() else l.toInt() - r.toInt()
+    }
+
+    private fun multiply(l: Number, r:Number): Number {
+        return if (l is Double || r is Double) l.toDouble() * r.toDouble() else l.toInt() * r.toInt()
+    }
+
+    private fun divide(l: Number, r:Number): Number {
+        return if (l is Double || r is Double) l.toDouble() / r.toDouble() else l.toInt() / r.toInt()
+    }
+
+    private fun lt(l: Number, r:Number): Boolean {
+        return if (l is Double || r is Double) l.toDouble() < r.toDouble() else l.toInt() < r.toInt()
+    }
+
+    private fun gt(l: Number, r:Number): Boolean {
+        return if (l is Double || r is Double) l.toDouble() > r.toDouble() else l.toInt() > r.toInt()
+    }
+
+    private fun lteq(l: Number, r:Number): Boolean {
+        return if (l is Double || r is Double) l.toDouble() <= r.toDouble() else l.toInt() <= r.toInt()
+    }
+
+    private fun gteq(l: Number, r:Number): Boolean {
+        return if (l is Double || r is Double) l.toDouble() >= r.toDouble() else l.toInt() >= r.toInt()
+    }
+
+
     fun printGlobals() {
         for ((name, value) in globalScope.getAll()) {
             println("$name: $value")

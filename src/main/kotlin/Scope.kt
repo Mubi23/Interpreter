@@ -1,6 +1,6 @@
 package org.example
 
-class Scope(public val store: MutableMap<String,Any> = mutableMapOf(), private val parentScope: Scope? = null) {
+class Scope(private val store: MutableMap<String,Any> = mutableMapOf(), private val parentScope: Scope? = null) {
 
     fun define(name: String, value: Any) {
         store[name] = value
@@ -25,5 +25,7 @@ class Scope(public val store: MutableMap<String,Any> = mutableMapOf(), private v
         return Scope(parentScope = this)
     }
 
-    fun getAll(): Map<String, Any> = store
+    fun getAll(): Map<String, Any> {
+        return store
+    }
 }

@@ -4,10 +4,10 @@ import kotlin.collections.mutableListOf
 
 class Parser(private val tokens: List<Token>) {
     private var pos: Int = 0
-    fun safePeek(): Token {
+    private fun safePeek(): Token {
         return if (pos < tokens.size) tokens[pos] else Token(TokenType.EOF,"",0)
     }
-    fun match(vararg types: TokenType): Boolean{
+    private fun match(vararg types: TokenType): Boolean{
         for (type in types){
             if (tokens[pos].type == type){
                 pos++
@@ -17,7 +17,7 @@ class Parser(private val tokens: List<Token>) {
         return false
     }
 
-    fun expect(type: TokenType): Boolean{
+    private fun expect(type: TokenType): Boolean{
         if (tokens[pos].type == type){
             pos++
             return true
@@ -32,7 +32,7 @@ class Parser(private val tokens: List<Token>) {
         return statements
     }
 
-    fun parseStatements(multiple: Boolean = true): Statement{
+    private fun parseStatements(multiple: Boolean = true): Statement{
         var statement: Statement
         when (safePeek().type){
             TokenType.FUN -> statement = parseFunDef()
@@ -50,7 +50,7 @@ class Parser(private val tokens: List<Token>) {
         }else return statement
     }
 
-    fun parseFunDef(): Statement{
+    private fun parseFunDef(): Statement{
         expect(TokenType.FUN)
         expect(TokenType.IDENT)
         val name = previous().value
@@ -74,14 +74,14 @@ class Parser(private val tokens: List<Token>) {
         return Statement.Function(name, args, listStatements)
     }
 
-    fun parseWhile(): Statement{
+    private fun parseWhile(): Statement{
         expect(TokenType.WHILE)
         val condition = parseExpr()
         expect(TokenType.DO)
         val statement = parseStatements()
         return Statement.While(condition, statement)
     }
-    fun parseIf(): Statement{
+    private fun parseIf(): Statement{
         expect(TokenType.IF)
         val condition = parseExpr()
         expect(TokenType.THEN)
@@ -93,22 +93,22 @@ class Parser(private val tokens: List<Token>) {
         }
         else return Statement.If(condition, thenBody, null)
     }
-    fun parseReturn(): Statement{
+    private fun parseReturn(): Statement{
         expect(TokenType.RETURN)
         val value = parseExpr()
         return Statement.Return(value)
     }
-    fun parseAssign(): Statement{
+    private fun parseAssign(): Statement{
         val identifier = tokens[pos++]
         expect(TokenType.EQ)
         val value = parseExpr()
         return Statement.Assign(identifier.value,value)
     }
 
-    fun parseExpr(): Expr {
+    private fun parseExpr(): Expr {
         return parseComparison()
     }
-    fun parseComparison(): Expr {
+    private fun parseComparison(): Expr {
         var left = parseAddSub()
         while (match(TokenType.EQ_EQ, TokenType.NE_EQ, TokenType.LT, TokenType.GT, TokenType.LT_EQ, TokenType.GT_EQ)) {
             val op = previous().type
@@ -117,7 +117,7 @@ class Parser(private val tokens: List<Token>) {
         }
         return left
     }
-    fun parseAddSub(): Expr {
+    private fun parseAddSub(): Expr {
         var left = parseMulDiv()
         while (match(TokenType.PLUS, TokenType.MINUS)) {
             val op = previous().type
@@ -126,7 +126,7 @@ class Parser(private val tokens: List<Token>) {
         }
         return left
     }
-    fun parseMulDiv(): Expr {
+    private fun parseMulDiv(): Expr {
         var left = parsePrimary()
         while (match(TokenType.STAR, TokenType.SLASH)) {
             val op = previous().type
@@ -136,9 +136,13 @@ class Parser(private val tokens: List<Token>) {
         return left
     }
 
-    fun parsePrimary(): Expr {
+    private fun parsePrimary(): Expr {
         when {
-            match(TokenType.NUMBER) -> return Expr.NumberLiteral(previous().value.toInt())
+            match(TokenType.NUMBER) -> {
+                val lexeme = previous().value
+                return if (lexeme.contains('.')) Expr.NumberLiteral(lexeme.toDouble())
+                else Expr.NumberLiteral(lexeme.toInt())
+            }
             match(TokenType.TRUE)   -> return Expr.BoolLiteral(true)
             match(TokenType.FALSE)  -> return Expr.BoolLiteral(false)
             match(TokenType.IDENT)  -> {
@@ -154,7 +158,7 @@ class Parser(private val tokens: List<Token>) {
             else -> throw Exception("Unexpected token ${tokens[pos]} at pos $pos")
         }
     }
-    fun parseCall(name: String): Expr {
+    private fun parseCall(name: String): Expr {
         expect(TokenType.LPAREN)
         val variables = mutableListOf<Expr>()
         if (safePeek().type != TokenType.RPAREN) {
@@ -164,7 +168,7 @@ class Parser(private val tokens: List<Token>) {
         expect(TokenType.RPAREN)
         return Expr.Call(name,variables)
     }
-    fun previous(): Token{
+    private fun previous(): Token{
         if (pos > 0) return tokens[pos - 1] else throw Exception("Negative position")
     }
 }

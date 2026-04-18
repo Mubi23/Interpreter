@@ -52,4 +52,11 @@ class InterpreterTest {
         val result = run("fun fact_iter(n) { r = 1, while true do if n == 0 then return r else r = r * n, n = n - 1 }\nb = fact_iter(5)")
         assertEquals(120, result["b"])
     }
+
+    @Test
+    fun `double test`() {
+        val result = run("x = 2.5\ny = 3\n y = x + y")
+        assertEquals(2.5, result["x"])
+        assertEquals(5.5, result["y"])
+    }
 }

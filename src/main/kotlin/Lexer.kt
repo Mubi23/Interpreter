@@ -14,7 +14,7 @@ class Lexer(private val source: String) {
     }
     fun tokenize(): List<Token> {
         while (pos < source.length) {
-            val ch: Char = source[pos++];
+            val ch: Char = source[pos++]
             when (ch) {
                 ' ', '\t', '\r' -> {}
                 '\n' -> line++
@@ -54,15 +54,15 @@ class Lexer(private val source: String) {
                 else -> {
                     when{
                         ch.isDigit() -> {
-                            val actualPos = pos-1;
-                            while (safePeek().isDigit()) pos++
-                            tokens.add(Token(TokenType.NUMBER, source.substring(actualPos,pos), line));
+                            val actualPos = pos-1
+                            while (safePeek().isDigit() || (safePeek() == '.' && source.getOrElse(pos + 1) { ' ' }.isDigit())) pos++
+                            tokens.add(Token(TokenType.NUMBER, source.substring(actualPos,pos), line))
                         }
                         ch.isLetter() -> {
                             val actualPos = pos-1
                             while (safePeek().isLetterOrDigit() || safePeek() == '_') pos++
                             val lexema = source.substring(actualPos, pos)
-                            val type = Lexer.keywords[lexema] ?: TokenType.IDENT
+                            val type = keywords[lexema] ?: TokenType.IDENT
                             tokens.add(Token(type, lexema, line))
                         }
                         else -> throw Exception("Invalid character.")
@@ -72,10 +72,10 @@ class Lexer(private val source: String) {
 
         }
         tokens.add(Token(TokenType.EOF, "", line))
-        return tokens.toList();
+        return tokens.toList()
     }
     fun safePeek(): Char{
-        return if (pos < source.length) source[pos] else '\u0000';
+        return if (pos < source.length) source[pos] else ' '
     }
 
 }
