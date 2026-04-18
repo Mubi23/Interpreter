@@ -1,0 +1,23 @@
+package org.example
+
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+
+class InterpreterTest {
+
+    private fun run(source: String): Map<String, Any> {
+        val tokens = Lexer(source).tokenize()
+        val statements = Parser(tokens).parse()
+        val interpreter = Interpreter()
+        interpreter.interpret(statements)
+        return interpreter.getGlobals()
+    }
+
+    @Test
+    fun `while loop`() {
+        val result = run("x = 0\ny = 0\nwhile x < 3 do if x == 1 then y = 10 else y = y + 1, x = x + 1")
+        assertEquals(3, result["x"])
+        assertEquals(11, result["y"])
+    }
+
+}
