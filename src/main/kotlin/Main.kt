@@ -4,7 +4,7 @@ package org.example
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 
 fun main() {
-    val source = "fun fact_rec(n) { if n <= 0 then return 1 else return n*fact_rec(n-1) }\na = fact_rec(5)"
+    val source = "x = 0\ny = 0\nwhile x < 3 do if x == 1 then y = 10 else y = y + 1, x = x + 1"
     println("Source: $source")
 
     val tokens = Lexer(source).tokenize()

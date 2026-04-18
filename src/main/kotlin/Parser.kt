@@ -32,8 +32,8 @@ class Parser(private val tokens: List<Token>) {
         return statements
     }
 
-    fun parseStatements(): Statement{
-        var statement: Statement;
+    fun parseStatements(multiple: Boolean = true): Statement{
+        var statement: Statement
         when (safePeek().type){
             TokenType.FUN -> statement = parseFunDef()
             TokenType.WHILE -> statement = parseWhile()
@@ -42,7 +42,7 @@ class Parser(private val tokens: List<Token>) {
             TokenType.IDENT -> statement = parseAssign()
             else -> throw Exception("Not allowed expression at position $pos")
         }
-        if (safePeek().type == TokenType.COMMA){
+        if (multiple && safePeek().type == TokenType.COMMA){
             val multipleStatements = mutableListOf<Statement>()
             multipleStatements.add(statement)
             while(match(TokenType.COMMA)) multipleStatements.add(parseStatements())
@@ -85,10 +85,10 @@ class Parser(private val tokens: List<Token>) {
         expect(TokenType.IF)
         val condition = parseExpr()
         expect(TokenType.THEN)
-        val thenBody = parseStatements()
+        val thenBody = parseStatements(false)
         if (safePeek().type == TokenType.ELSE){
             expect(TokenType.ELSE)
-            val elseBody = parseStatements()
+            val elseBody = parseStatements(false)
             return Statement.If(condition, thenBody, elseBody)
         }
         else return Statement.If(condition, thenBody, null)
